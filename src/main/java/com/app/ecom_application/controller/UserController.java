@@ -1,8 +1,9 @@
-package com.app.ecom_application;
+package com.app.ecom_application.controller;
 
-
+import com.app.ecom_application.dto.UserRequest;
+import com.app.ecom_application.dto.UserResponse;
+import com.app.ecom_application.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,28 +17,28 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers(){
+    public ResponseEntity<List<UserResponse>> getAllUsers(){
         return ResponseEntity.ok(userService.fetchAllUsers());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUser(@PathVariable Long id){
+    public ResponseEntity<UserResponse> getUser(@PathVariable Long id){
         return userService.fetchUser(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<String> createUser(@RequestBody User user){
-        userService.addUser(user);
+    public ResponseEntity<String> createUser(@RequestBody UserRequest userRequest){
+        userService.addUser(userRequest);
         return ResponseEntity.ok("User added successfully");
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<String> updateUser(@PathVariable Long id,
-                                             @RequestBody User updatedUser)
+                                             @RequestBody UserRequest updatedUserRequest)
     {
-        boolean updated = userService.updateUser(id,updatedUser);
+        boolean updated = userService.updateUser(id,updatedUserRequest);
         if (updated)
             return ResponseEntity.ok("User updated successfully");
         return ResponseEntity.notFound().build();
