@@ -42,7 +42,7 @@ public class ProductController {
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 
-    @DeleteMapping("/search")
+    @GetMapping("/search")
     public ResponseEntity<List<ProductResponse>>  searchProduct (@RequestParam String keyword){
         return ResponseEntity.ok(productService.searchProducts(keyword));
     }
