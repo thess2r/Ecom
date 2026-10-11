@@ -11,3 +11,8 @@ spring:
     hibernate:
       ddl-auto: create
 
+management:
+  endpoints:
+    web:
+      exposure:
+        exclude: '*'
