@@ -1,9 +1,10 @@
-package com.app.ecom_application.model;
+package com.ecommerce.order.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -15,14 +16,8 @@ public class CartItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id",nullable = false)
-    private User user;
-
-    @ManyToOne
-    @JoinColumn(name = "product_id",nullable = false)
-    private Product product;
+    private String userId;
+    private Long productId;
 
     private Integer quantity;
     private BigDecimal price;
@@ -30,6 +25,6 @@ public class CartItem {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    @CreationTimestamp
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
 }

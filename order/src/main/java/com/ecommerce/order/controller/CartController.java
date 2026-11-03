@@ -1,10 +1,10 @@
-package com.app.ecom_application.controller;
+package com.ecommerce.order.controller;
 
-import com.app.ecom_application.dto.CartItemRequest;
-import com.app.ecom_application.model.CartItem;
-import com.app.ecom_application.service.CartService;
+
+import com.ecommerce.order.dto.CartItemRequest;
+import com.ecommerce.order.model.CartItem;
+import com.ecommerce.order.service.CartService;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.LifecycleState;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +29,7 @@ public class CartController {
 
     @DeleteMapping("/items/{productId}")
     public ResponseEntity<Void> removeFromCart(
-                @RequestHeader("X-User-ID") String userId,
+            @RequestHeader("X-User-ID") String userId,
             @PathVariable Long productId) {
         boolean deleted = cartService.deleteItemFromCart(userId, productId);
         return deleted ? ResponseEntity.noContent().build()
