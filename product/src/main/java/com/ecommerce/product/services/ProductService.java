@@ -1,9 +1,9 @@
-package com.app.ecom_application.service;
+package com.ecommerce.product.services;
 
-import com.app.ecom_application.dto.ProductRequest;
-import com.app.ecom_application.dto.ProductResponse;
-import com.app.ecom_application.model.Product;
-import com.app.ecom_application.repository.ProductRepository;
+import com.ecommerce.product.dtos.ProductRequest;
+import com.ecommerce.product.dtos.ProductResponse;
+import com.ecommerce.product.models.Product;
+import com.ecommerce.product.repositories.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +35,7 @@ public class ProductService {
         response.setPrice(savedProduct.getPrice());
         response.setImageUrl(savedProduct.getImageUrl());
         response.setStockQuantity(savedProduct.getStockQuantity());
+        response.setCategory(savedProduct.getCategory());
         return response;
 
     }
@@ -45,6 +46,7 @@ public class ProductService {
         product.setPrice(productRequest.getPrice());
         product.setImageUrl(productRequest.getImageUrl());
         product.setStockQuantity(productRequest.getStockQuantity());
+        product.setCategory(productRequest.getCategory());
 
     }
 
