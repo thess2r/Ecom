@@ -1,6 +1,6 @@
 # E-Commerce Microservices
 
-Учебный backend интернет-магазина на Java и Spring Boot. Изначальный монолит разделён на три независимо запускаемых микросервиса: пользователи, каталог товаров и заказы.
+Backend интернет-магазина на Java и Spring Boot, разделённый на три независимо запускаемых микросервиса: пользователи, каталог товаров и заказы.
 
 ## Архитектура
 
@@ -137,8 +137,3 @@ curl -X POST http://localhost:8083/api/cart \
 
 Структурное разделение монолита завершено. `order-service` хранит внешние `userId` и `productId`, поэтому JPA-модели разных сервисов больше не связаны общей базой данных. Межсервисные HTTP-клиенты, API Gateway, service discovery и постоянная PostgreSQL база могут быть добавлены на следующих этапах.
 
-## Учебные материалы
-
-Проект развивается по материалам курса [Java Spring Boot Microservices eCommerce Project](https://www.youtube.com/watch?v=i_9z3tNrphE). Раздел миграции на микросервисы начинается с отметки [09:39:10](https://www.youtube.com/watch?v=i_9z3tNrphE&t=34750s).
-
-Дополнительный [Java/Spring Boot Roadmap](https://embarkx.com/roadmap).
