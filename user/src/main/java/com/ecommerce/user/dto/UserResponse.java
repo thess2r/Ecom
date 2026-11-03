@@ -1,6 +1,6 @@
-package com.app.ecom_application.dto;
+package com.ecommerce.user.dto;
 
-import com.app.ecom_application.model.UserRole;
+import com.ecommerce.user.model.UserRole;
 import lombok.Data;
 
 @Data
@@ -13,4 +13,3 @@ public class UserResponse {
     private UserRole role;
     private AddressDTO address;
 }
-
