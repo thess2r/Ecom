@@ -1,0 +1,15 @@
+services:
+  user-service:
+    build: ./user
+    ports:
+      - "8082:8082"
+
+  product-service:
+    build: ./product
+    ports:
+      - "8081:8081"
+
+  order-service:
+    build: ./order
+    ports:
+      - "8083:8083"
