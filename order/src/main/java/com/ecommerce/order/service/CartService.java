@@ -1,13 +1,15 @@
 package com.ecommerce.order.service;
 
+import com.ecommerce.order.client.ProductClient;
+import com.ecommerce.order.client.UserClient;
 import com.ecommerce.order.dto.CartItemRequest;
+import com.ecommerce.order.dto.ProductResponse;
 import com.ecommerce.order.model.CartItem;
 import com.ecommerce.order.repository.CartItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -16,28 +18,37 @@ import java.util.List;
 public class CartService {
 
     private final CartItemRepository cartItemRepository;
+    private final UserClient userClient;
+    private final ProductClient productClient;
 
 
     public boolean addToCart(String userId, CartItemRequest request) {
-//        Optional<Product> productOpt = productRepository.findById(request.getProductId());
-//        if (productOpt.isEmpty())
-//            return false;
-//
-//        Product product = productOpt.get();
-//        if (product.getStockQuantity() < request.getQuantity())
-//            return false;
-//
-//        Optional<User> userOpt = userRepository.findById(Long.valueOf(userId));
-//        if (userOpt.isEmpty())
-//            return false;
-//
-//        User user = userOpt.get();
+        if (request.getProductId() == null || request.getQuantity() == null || request.getQuantity() <= 0) {
+            return false;
+        }
+
+        if (userClient.getUser(userId).isEmpty()) {
+            return false;
+        }
+
+        ProductResponse product = productClient.getProduct(request.getProductId()).orElse(null);
+        if (product == null || !Boolean.TRUE.equals(product.getActive()) || product.getPrice() == null) {
+            return false;
+        }
 
         CartItem existingCartItem = cartItemRepository.findByUserIdAndProductId(userId,request.getProductId());
+        int requestedTotalQuantity = request.getQuantity();
+        if (existingCartItem != null) {
+            requestedTotalQuantity += existingCartItem.getQuantity();
+        }
+        if (product.getStockQuantity() == null || product.getStockQuantity() < requestedTotalQuantity) {
+            return false;
+        }
+
         if (existingCartItem != null){
             //update the quantity
             existingCartItem.setQuantity(existingCartItem.getQuantity() + request.getQuantity());
-            existingCartItem.setPrice(BigDecimal.valueOf(1000.00));
+            existingCartItem.setPrice(product.getPrice());
             cartItemRepository.save(existingCartItem);
         }
         else {
@@ -46,7 +57,7 @@ public class CartService {
             cartItem.setUserId(userId);
             cartItem.setProductId(request.getProductId());
             cartItem.setQuantity(request.getQuantity());
-            cartItem.setPrice(BigDecimal.valueOf(1000.00));
+            cartItem.setPrice(product.getPrice());
             cartItemRepository.save(cartItem);
         }
         return true;

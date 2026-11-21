@@ -26,7 +26,7 @@ public class UserService {
                 .toList();
     }
 
-    public Optional<UserResponse> fetchUser(Long id) {
+    public Optional<UserResponse> fetchUser(String id) {
         return userRepository.findById(id).map(this::mapToUserResponse);
     }
 
@@ -38,7 +38,7 @@ public class UserService {
     }
 
     @Transactional
-    public boolean updateUser(Long id, UserRequest userRequest) {
+    public boolean updateUser(String id, UserRequest userRequest) {
         return userRepository.findById(id).map(existingUser -> {
             updateUserFromRequest(existingUser, userRequest);
             userRepository.save(existingUser);
@@ -67,7 +67,7 @@ public class UserService {
 
     private UserResponse mapToUserResponse(User user) {
         UserResponse response = new UserResponse();
-        response.setId(String.valueOf(user.getId()));
+        response.setId(user.getId());
         response.setFirstName(user.getFirstName());
         response.setLastName(user.getLastName());
         response.setEmail(user.getEmail());

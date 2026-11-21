@@ -13,6 +13,7 @@
     <description>Aggregator for the e-commerce microservices</description>
 
     <modules>
+        <module>configserver</module>
         <module>user</module>
         <module>product</module>
         <module>order</module>

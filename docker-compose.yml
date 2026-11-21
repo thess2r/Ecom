@@ -1,15 +1,67 @@
+name: ecom-microservices
+
 services:
-  user-service:
-    build: ./user
+  postgres:
+    container_name: postgres_container
+    image: postgres:14
+    environment:
+      POSTGRES_USER: assanali
+      POSTGRES_PASSWORD: assanali2007
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
     ports:
-      - "8082:8082"
+      - "5433:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
 
-  product-service:
-    build: ./product
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pgadmin4@pgadmin.org
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    volumes:
+      - pgadmin:/var/lib/pgadmin
     ports:
-      - "8081:8081"
+      - "5050:80"
+    networks:
+      - backend
+    restart: unless-stopped
 
-  order-service:
-    build: ./order
+  rabbitmq:
+    container_name: rabbitmq_container
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
     ports:
-      - "8083:8083"
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - backend
+    restart: unless-stopped
+
+  mongodb:
+    container_name: mongodb_container
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb:/data/db
+    networks:
+      - backend
+    restart: unless-stopped
+
+networks:
+  postgres:
+    driver: bridge
+  backend:
+    driver: bridge
+
+volumes:
+  postgres:
+  pgadmin:
+  mongodb:

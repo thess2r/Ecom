@@ -1,22 +1,5 @@
 spring:
   application:
     name: user-service
-  h2:
-    console:
-      enabled: true
-  datasource:
-    url: jdbc:h2:mem:userdb
-  jpa:
-    open-in-view: false
-    show-sql: true
-    hibernate:
-      ddl-auto: create
-
-server:
-  port: 8082
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
+  config:
+    import: optional:configserver:http://localhost:8080
