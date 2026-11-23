@@ -1,76 +1,236 @@
 # E-Commerce Microservices
 
-Backend интернет-магазина на Java и Spring Boot, разделённый на три независимо запускаемых микросервиса: пользователи, каталог товаров и заказы.
+Backend-приложение интернет-магазина, построенное на Java и Spring Boot с использованием микросервисной архитектуры.
+
+Проект включает отдельные сервисы для управления пользователями, товарами, корзиной и заказами. Централизованная конфигурация реализована через Spring Cloud Config, а синхронное взаимодействие между сервисами — через Spring `RestClient`.
+
+## Возможности
+
+- управление пользователями и адресами;
+- создание, обновление и поиск товаров;
+- контроль активности и количества товара;
+- добавление и удаление товаров из корзины;
+- создание заказа на основе корзины;
+- проверка пользователя и товара через межсервисные HTTP-запросы;
+- централизованная конфигурация микросервисов;
+- динамическое обновление конфигурации через Spring Cloud Bus;
+- мониторинг состояния сервисов через Spring Boot Actuator;
+- запуск инфраструктуры через Docker Compose.
 
 ## Архитектура
 
-```text
-ecom-application/
-├── user/       # пользователи и адреса
-├── product/    # каталог товаров
-├── order/      # корзина и оформление заказов
-├── pom.xml     # Maven reactor для общей сборки
-└── docker-compose.yml
+```mermaid
+flowchart LR
+    Client[API Client / Postman]
+
+    Config[Config Server<br/>:8080]
+    User[User Service<br/>:8082]
+    Product[Product Service<br/>:8081]
+    Order[Order Service<br/>:8083]
+
+    Mongo[(MongoDB<br/>:27017)]
+    Postgres[(PostgreSQL<br/>:5433)]
+    Rabbit[(RabbitMQ<br/>:5672)]
+
+    Client --> User
+    Client --> Product
+    Client --> Order
+
+    Order -->|REST: проверка пользователя| User
+    Order -->|REST: товар, цена и остаток| Product
+
+    User --> Mongo
+    Product --> Postgres
+    Order --> Postgres
+
+    Config -.-> User
+    Config -.-> Product
+    Config -.-> Order
+
+    Rabbit -.-> User
+    Rabbit -.-> Product
+    Rabbit -.-> Order
 ```
 
-| Сервис | Порт | Ответственность | Основной API |
-| --- | ---: | --- | --- |
-| `user-service` | 8082 | Пользователи и адреса | `/api/users` |
-| `product-service` | 8081 | Товары, остатки и поиск | `/api/products` |
-| `order-service` | 8083 | Корзина и заказы | `/api/cart`, `/api/orders` |
+## Микросервисы
 
-Каждый сервис содержит собственные исходники, `pom.xml`, Spring Boot конфигурацию и отдельную H2 базу. Корневой `pom.xml` используется только как Maven-агрегатор и не объединяет сервисы обратно в монолит.
+| Сервис | Порт | Назначение | Хранилище |
+|---|---:|---|---|
+| `configserver` | 8080 | Централизованная конфигурация | Конфигурации из classpath |
+| `user-service` | 8082 | Пользователи и адреса | MongoDB |
+| `product-service` | 8081 | Каталог, цены и остатки | PostgreSQL |
+| `order-service` | 8083 | Корзина и заказы | PostgreSQL |
 
 ## Технологии
 
 - Java 17
 - Spring Boot 3.2.5
+- Spring Cloud 2023.0.x
 - Spring Web MVC
-- Spring Data JPA и Hibernate
-- H2 Database
+- Spring `RestClient`
+- Spring Cloud Config
+- Spring Cloud Bus
+- Spring Data JPA
+- Spring Data MongoDB
+- Hibernate
+- PostgreSQL 14
+- MongoDB 7
+- RabbitMQ
 - Spring Boot Actuator
-- Maven Wrapper
-- Docker и Docker Compose
+- Maven
+- Docker Compose
 - Lombok
+- JUnit 5, Mockito и AssertJ
+
+## Структура проекта
+
+```text
+ecom-application/
+├── configserver/             # Централизованная конфигурация
+│   └── src/main/resources/config/
+│       ├── user-service.yml
+│       ├── product-service.yml
+│       └── order-service.yml
+├── user/                     # User Service
+├── product/                  # Product Service
+├── order/                    # Cart и Order Service
+├── Monolith/                 # Материалы исходного монолита
+├── docker/                   # Дополнительные Docker-ресурсы
+├── docker-compose.yml        # PostgreSQL, MongoDB, RabbitMQ и pgAdmin
+├── pom.xml                   # Maven reactor
+└── README.md
+```
+
+## Требования
+
+Перед запуском установите:
+
+- JDK 17;
+- Docker Desktop;
+- Git.
+
+Проверка Java:
+
+```powershell
+java -version
+```
+
+Проверка Docker:
+
+```powershell
+docker version
+docker compose version
+```
 
 ## Запуск проекта
 
-### Локальная сборка
-
-Требуется JDK 17. Из корня репозитория выполните:
+### 1. Клонирование репозитория
 
 ```powershell
-.\mvnw.cmd clean verify
+git clone https://github.com/thess2r/Ecom.git
+cd Ecom
 ```
 
-Запустите сервисы в отдельных терминалах:
+### 2. Запуск инфраструктуры
+
+Убедитесь, что Docker Desktop запущен:
 
 ```powershell
-.\user\mvnw.cmd -f user\pom.xml spring-boot:run
-.\product\mvnw.cmd -f product\pom.xml spring-boot:run
-.\order\mvnw.cmd -f order\pom.xml spring-boot:run
+docker compose up -d
 ```
 
-### Docker Compose
+Будут запущены:
 
-```powershell
-docker compose up --build
+| Компонент | Адрес |
+|---|---|
+| PostgreSQL | `localhost:5433` |
+| MongoDB | `localhost:27017` |
+| RabbitMQ | `localhost:5672` |
+| RabbitMQ Management | `http://localhost:15672` |
+| pgAdmin | `http://localhost:5050` |
+
+Данные RabbitMQ:
+
+```text
+username: guest
+password: guest
 ```
 
-Остановка контейнеров:
+Данные pgAdmin:
+
+```text
+email: pgadmin4@pgadmin.org
+password: admin
+```
+
+### 3. Сборка проекта
+
+Из корневой директории:
 
 ```powershell
-docker compose down
+.\mvnw.cmd clean package -DskipTests
+```
+
+### 4. Запуск Config Server
+
+Config Server необходимо запускать первым:
+
+```powershell
+.\mvnw.cmd -f configserver\pom.xml spring-boot:run
+```
+
+Проверка конфигурации:
+
+```text
+http://localhost:8080/user-service/default
+http://localhost:8080/product-service/default
+http://localhost:8080/order-service/default
+```
+
+### 5. Запуск микросервисов
+
+Откройте отдельный терминал для каждого сервиса.
+
+User Service:
+
+```powershell
+.\mvnw.cmd -f user\pom.xml spring-boot:run
+```
+
+Product Service:
+
+```powershell
+.\mvnw.cmd -f product\pom.xml spring-boot:run
+```
+
+Order Service:
+
+```powershell
+.\mvnw.cmd -f order\pom.xml spring-boot:run
+```
+
+### 6. Проверка состояния
+
+```text
+http://localhost:8082/actuator/health
+http://localhost:8081/actuator/health
+http://localhost:8083/actuator/health
 ```
 
 ## REST API
 
-### User service — `http://localhost:8082`
+### User Service
 
-| Метод | Endpoint | Назначение |
-| --- | --- | --- |
+Базовый URL:
+
+```text
+http://localhost:8082/api/users
+```
+
+| Метод | Endpoint | Описание |
+|---|---|---|
 | `GET` | `/api/users` | Получить всех пользователей |
-| `GET` | `/api/users/{id}` | Получить пользователя по ID |
+| `GET` | `/api/users/{id}` | Получить пользователя |
 | `POST` | `/api/users` | Создать пользователя |
 | `PUT` | `/api/users/{id}` | Обновить пользователя |
 
@@ -83,9 +243,9 @@ curl -X POST http://localhost:8082/api/users \
     "firstName": "Assanali",
     "lastName": "User",
     "email": "user@example.com",
-    "phone": "+70000000000",
+    "phone": "+77000000000",
     "address": {
-      "street": "Abay street",
+      "street": "Abay Street",
       "city": "Almaty",
       "state": "Almaty",
       "country": "Kazakhstan",
@@ -94,46 +254,129 @@ curl -X POST http://localhost:8082/api/users \
   }'
 ```
 
-### Product service — `http://localhost:8081`
+### Product Service
 
-| Метод | Endpoint | Назначение |
-| --- | --- | --- |
+Базовый URL:
+
+```text
+http://localhost:8081/api/products
+```
+
+| Метод | Endpoint | Описание |
+|---|---|---|
 | `GET` | `/api/products` | Получить активные товары |
-| `GET` | `/api/products/search?keyword=...` | Найти товары |
+| `GET` | `/api/products/{id}` | Получить товар |
+| `GET` | `/api/products/search?keyword=...` | Поиск товаров |
 | `POST` | `/api/products` | Создать товар |
 | `PUT` | `/api/products/{id}` | Обновить товар |
 | `DELETE` | `/api/products/{id}` | Деактивировать товар |
 
-### Order service — `http://localhost:8083`
+### Order Service
 
-Запросы корзины и заказов используют заголовок `X-User-ID`.
+#### Корзина
 
-| Метод | Endpoint | Назначение |
-| --- | --- | --- |
-| `GET` | `/api/cart` | Получить корзину пользователя |
-| `POST` | `/api/cart` | Добавить товар в корзину |
-| `DELETE` | `/api/cart/items/{productId}` | Удалить товар из корзины |
-| `POST` | `/api/orders` | Оформить заказ |
+Базовый URL:
 
-Пример добавления товара:
+```text
+http://localhost:8083/api/cart
+```
+
+Запросы требуют заголовок:
+
+```text
+X-User-ID: <MongoDB user ID>
+```
+
+| Метод | Endpoint | Описание |
+|---|---|---|
+| `GET` | `/api/cart` | Получить корзину |
+| `POST` | `/api/cart` | Добавить товар |
+| `DELETE` | `/api/cart/items/{productId}` | Удалить товар |
+
+При добавлении товара `order-service`:
+
+1. проверяет пользователя через `user-service`;
+2. запрашивает товар через `product-service`;
+3. проверяет активность и остаток;
+4. получает актуальную цену;
+5. сохраняет товар в корзине.
+
+Пример:
 
 ```bash
 curl -X POST http://localhost:8083/api/cart \
   -H "Content-Type: application/json" \
-  -H "X-User-ID: 1" \
-  -d '{"productId": 1, "quantity": 2}'
+  -H "X-User-ID: USER_ID" \
+  -d '{
+    "productId": 1,
+    "quantity": 2
+  }'
 ```
 
-## Мониторинг
+#### Заказы
 
-В каждом сервисе доступны Actuator endpoints:
+| Метод | Endpoint | Описание |
+|---|---|---|
+| `POST` | `/api/orders` | Создать заказ из корзины |
 
-- `/actuator/health`
-- `/actuator/info`
+```bash
+curl -X POST http://localhost:8083/api/orders \
+  -H "X-User-ID: USER_ID"
+```
 
-Например: `http://localhost:8081/actuator/health`.
+## Тестирование
 
-## Текущий этап
+Запуск всех тестов:
 
-Структурное разделение монолита завершено. `order-service` хранит внешние `userId` и `productId`, поэтому JPA-модели разных сервисов больше не связаны общей базой данных. Межсервисные HTTP-клиенты, API Gateway, service discovery и постоянная PostgreSQL база могут быть добавлены на следующих этапах.
+```powershell
+.\mvnw.cmd test
+```
 
+Тесты межсервисной логики корзины:
+
+```powershell
+.\mvnw.cmd -f order\pom.xml -Dtest=CartServiceTest test
+```
+
+## Остановка инфраструктуры
+
+Остановить контейнеры:
+
+```powershell
+docker compose down
+```
+
+Остановить и удалить Docker volumes:
+
+```powershell
+docker compose down -v
+```
+
+> Команда с `-v` удаляет сохранённые данные PostgreSQL, MongoDB и pgAdmin.
+
+## Текущий статус
+
+Реализовано:
+
+- разделение монолита на микросервисы;
+- PostgreSQL и MongoDB;
+- Config Server;
+- Spring Cloud Bus;
+- синхронное взаимодействие через `RestClient`;
+- проверка пользователя и товара при работе с корзиной;
+- unit-тесты логики корзины.
+
+Планируется:
+
+- Service Discovery с Eureka;
+- API Gateway;
+- централизованная обработка ошибок;
+- Resilience4j;
+- JWT-аутентификация;
+- асинхронное взаимодействие через RabbitMQ;
+- централизованные логи и метрики;
+- контейнеризация самих микросервисов.
+
+## Автор
+
+GitHub: [@thess2r](https://github.com/thess2r)
