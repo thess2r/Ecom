@@ -51,8 +51,11 @@ jobs:
       - name: Make Maven Wrapper executable
         run: chmod +x mvnw
 
-      - name: Build application JARs
-        run: ./mvnw --batch-mode --no-transfer-progress package -DskipTests
+      - name: Build application JAR
+        run: >-
+          ./mvnw --batch-mode --no-transfer-progress
+          -f ${{ matrix.service }}/pom.xml
+          package -DskipTests
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
