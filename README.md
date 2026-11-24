@@ -1,5 +1,7 @@
 # E-Commerce Microservices
 
+[![CI](https://github.com/thess2r/Ecom/actions/workflows/ci.yml/badge.svg)](https://github.com/thess2r/Ecom/actions/workflows/ci.yml)
+
 Backend-приложение интернет-магазина, построенное на Java и Spring Boot с использованием микросервисной архитектуры.
 
 Проект включает отдельные сервисы для управления пользователями, товарами, корзиной и заказами. Централизованная конфигурация реализована через Spring Cloud Config, а синхронное взаимодействие между сервисами — через Spring `RestClient`.
