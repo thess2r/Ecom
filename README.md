@@ -356,6 +356,34 @@ docker compose down -v
 
 > Команда с `-v` удаляет сохранённые данные PostgreSQL, MongoDB и pgAdmin.
 
+## Docker-образы и production Compose
+
+После успешного CI workflow `Publish Docker images` собирает образы для `linux/amd64` и `linux/arm64` и публикует их в GitHub Container Registry:
+
+```text
+ghcr.io/thess2r/ecom-configserver
+ghcr.io/thess2r/ecom-user
+ghcr.io/thess2r/ecom-product
+ghcr.io/thess2r/ecom-order
+```
+
+Для запуска полного стека на сервере создайте production-файл окружения:
+
+```bash
+cp .env.example .env
+```
+
+Замените значения `change-me` в `.env` на уникальные пароли, затем запустите:
+
+```bash
+docker compose --env-file .env -f compose.production.yml pull
+docker compose --env-file .env -f compose.production.yml up -d
+```
+
+Файл `.env` исключён из Git и не должен попадать в репозиторий.
+
+Production Compose запускает четыре приложения, PostgreSQL, MongoDB и RabbitMQ в общей закрытой Docker-сети. Адреса баз данных и микросервисов передаются приложениям через переменные окружения без использования `localhost` между контейнерами.
+
 ## Текущий статус
 
 Реализовано:

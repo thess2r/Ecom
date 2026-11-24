@@ -1,0 +1,11 @@
+.git
+.github
+.idea
+**/target/*
+!configserver/target/configserver-0.0.1-SNAPSHOT.jar
+!user/target/user-0.0.1-SNAPSHOT.jar
+!product/target/product-0.0.1-SNAPSHOT.jar
+!order/target/order-0.0.1-SNAPSHOT.jar
+Monolith
+*.log
+.env
